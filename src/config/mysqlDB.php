@@ -1,11 +1,11 @@
 <?php
 class Db
 {
-    private $dbhost = 'localhost';
-    private $dbuser = 'root';
-    private $dbpass = '';
-    private $dbname = 'slim';
-    private $dbConn;
+    public $dbhost = 'localhost';
+    public $dbuser = 'root';
+    public $dbpass = '';
+    public $dbname = 'slim';
+    public $dbConn;
 
     public function __construct()
     {
@@ -21,4 +21,3 @@ class Db
         return $this->dbConn;
     }
 }
-?>

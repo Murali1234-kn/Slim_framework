@@ -5,11 +5,12 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 // create new Slim instance
 $app = new \Slim\App;
-
-//get all data
+function error($e, $response)
+{
+      $response->getBody()->write('{"error": {"msg": "' . $e->getMessage() . '"}');
+}
 $app->get('/api/all', function(Request $request, Response $response)
 {
-  // echo 'Welcome to ------------------------------------>>>>>>>>>>djvgfbgf0eaipfkfs';
 
   $sql = "SELECT * FROM first";
 
@@ -18,38 +19,18 @@ try {
     $conn = $db->getConnection();
 
     $result = $conn->query($sql);
-
     if ($result) {
         $users = $result->fetch_all(MYSQLI_ASSOC);
 
-        echo json_encode($users);
+        $response->getBody()->write(json_encode($users));
     } else {
-        echo '{"error": {"msg": "' . $conn->error . '"}';
+         error($conn,$response);
     }
 } catch (Exception $e) {
-    echo '{"error": {"msg": "' . $e->getMessage() . '"}';
+   error($e,$response);
 }
 
 });
-///////////////  PDO //////////////;
-  // $sql = "SELECT * FROM first";
-
-  // try {
-  //   $db = new db();
-
-  //   $db = $db->connect();
-
-  //   $stmt = $db->query( $sql );
-  //   $users = $stmt->fetchAll( PDO::FETCH_OBJ );
-  //   $db = null;
-
-  //   echo json_encode($users);    
-
-  // } 
-  // catch( PDOException $e ) {
-
-  //   echo '{"error": {"msg": ' . $e->getMessage() . '}';
-  // }
 
 // by id
 $app->get('/api/all/{id}', function(Request $request, Response $response){
@@ -62,16 +43,18 @@ $app->get('/api/all/{id}', function(Request $request, Response $response){
   
       $result = $conn->query($sql);
   
-      if ($result) {
+      if ($result)
+      {
           $users = $result->fetch_all(MYSQLI_ASSOC);
           $response->getBody()->write(json_encode($users));
       } 
       else {
-          echo '{"error": {"msg": "' . $conn->error . '"}';
+          error($conn,$response);
       }
   } catch (Exception $e) {
-      echo '{"error": {"msg": "' . $e->getMessage() . '"}';
-  }
+        error($e,$response);
+
+    }
   });
 
   
@@ -84,22 +67,22 @@ $app->get('/api/all/{id}', function(Request $request, Response $response){
     $gender = $request->getParam('Gender');
 
     $sql = "INSERT INTO first (id, Name, Age, Gender) VALUES (?, ?, ?, ?)";
-
     try {
         $db = new Db();
-        $mysqli = $db->getConnection();
 
+        $mysqli = $db->getConnection();
         $stmt = $mysqli->prepare($sql);
 
         $stmt->bind_param("isis", $id, $name, $age, $gender);
 
         $stmt->execute();
 
-        echo json_encode(['message' => 'added successfully']);
+        $response->getBody()->write( json_encode(['message' => 'added successfully']));
     } catch (Exception $e)
      {
 
-      echo json_encode(['error' => ['message' => $e->getMessage()]]);
+        error($e,$response);
+
     }
 });
 
@@ -112,25 +95,23 @@ $app->put('/api/all/update/{id}', function(Request $request,Response $response) 
   $age = $request->getParam('Age');
   $gender = $request->getParam('Gender');
 
-  $sql = "UPDATE first SET name = ?, age = ?, gender = ? WHERE id = $id";
+    $sql = "UPDATE first SET name = '$name', age = $age, gender = '$gender' WHERE id = '$id'";
 
-  try {
+
+    try {
       $db = new Db();
       $mysqli = $db->getConnection();
 
-      $stmt = $mysqli->prepare($sql);
+        $stmt = $mysqli->query($sql);
+        if($stmt)
+        {
+            $response->getBody()->write(json_encode(['message' => 'updated successfully']));
+        }
 
-      $stmt->bind_param("sis", $name, $age, $gender);
-
-      $stmt->execute();
-
-      $response->getBody()->write(json_encode(['message' => 'updated successfully']));
-     
   } catch (Exception $e) {
-      $response->getBody()->write(json_encode(['error' => ['message' => $e->getMessage()]]));
-  }
+        error($e,$response);
+    }
 
-  return $response->withHeader('Content-Type', 'application/json');
 });
 
 $app->delete('/api/all/delete/{id}', function(Request $request, Response $response) 
@@ -154,11 +135,13 @@ $app->delete('/api/all/delete/{id}', function(Request $request, Response $respon
           $deleteStmt = $mysqli->prepare($b_delete);          // ID exists, proceed with deletion
 
           $deleteStmt->execute();
-          echo json_encode(['message' => 'Deleted successfully']);
+          $response->getBody()->write(json_encode(['message' => 'Deleted successfully']));
       } else {
-          echo json_encode(['message' => 'Id not present in table']);
+          $response->getBody()->write(json_encode(['message' => 'Id not present in table']));
       }
   } catch (Exception $e) {
-      echo '{"error": {"msg": "' . $e->getMessage() . '"}';
+      error($e,$response);
+
   }
 });
+// No newline at end of file

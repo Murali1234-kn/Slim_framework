@@ -1,14 +1,10 @@
 <?php
-/**
- * Connect MySQL with PDO class
- */
-class db {
-  
-  private $dbhost = 'localhost';
+class Db
+{
+    private $dbhost = 'localhost';
   private $dbuser = 'root';
   private $dbpass = '';
   private $dbname = 'slim';
-
   public function connect() {
 
     $prepare_conn_str = "mysql:host=$this->dbhost;dbname=$this->dbname";
